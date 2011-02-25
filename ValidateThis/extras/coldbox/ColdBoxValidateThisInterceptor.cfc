@@ -201,7 +201,7 @@
 		<cfargument name="event" type="any" required="true">
 		<cfset var rc = arguments.event.getCollection()/>
 		<cfif !structKeyExists(rc,getProperty("ValidationResultKey"))>
-			<cfset setValidationResultInRequest(arguments.event,getValidateThis().newResult(theObject=arguments.event.getValue("theObject",{})))>
+			<cfset setValidationResultInRequest(arguments.event,getValidateThis().newResult(theObject=arguments.event.getValue("theObject",structNew())))>
 		</cfif>
 		<cfreturn rc[getProperty("ValidationResultKey")]/>
 	</cffunction>
