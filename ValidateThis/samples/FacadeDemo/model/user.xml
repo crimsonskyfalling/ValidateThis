@@ -63,6 +63,18 @@
 		<property name="HowMuch" desc="How much money would you like?">
 			<rule type="numeric" contexts="*" />
 		</property>
+		<property name="HowCool" desc="How cool this is on a scale of 1 to 10?">
+			<rule type="numeric" contexts="*" failuremessage="How Cool must be a number" />
+			<rule type="required" 
+					contexts="*" 
+						condition="IsCool" 
+							failureMessage="You must rate how cool this is because this is very cool." 
+				/>
+			<rule type="range" contexts="*" condition="IsCool" >
+				<param name="min" value="1" />
+				<param name="max" value="10" />
+			</rule>
+		</property>
 		<property name="AllowCommunication" />
 		<property name="CommunicationMethod">
 			<rule type="required" contexts="*"

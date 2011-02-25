@@ -1,7 +1,17 @@
 /*
- * WIP jQuery.validatethis.js plug-in for ValidateThis 0.98.3+
- * Created 2011 Adam Drew
- *
+	
+	Copyright 2011, Adam Drew
+	
+	Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in 
+	compliance with the License.  You may obtain a copy of the License at 
+	
+		http://www.apache.org/licenses/LICENSE-2.0
+	
+	Unless required by applicable law or agreed to in writing, software distributed under the License is 
+	distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or 
+	implied.  See the License for the specific language governing permissions and limitations under the 
+	License.
+	
  */
 
 // closure for plugin
@@ -16,9 +26,9 @@
 	};
 
 	$.validatethis = {
-		version: '0.98.2',
-		ruleCache: [], // associatve array for client side rule caching
-		Conditions: [],
+		version: '0.99',
+		vtCache: [], // todo implement accessors for has|add|get|remove
+		conditions: [], 
 		
 		// Settings
 		settings: {}, 
@@ -107,7 +117,7 @@
 			if ( $(element).data("depends") ){
 				var key = $(element).data("depends");
 				var formID = $(element).parents().find("form:first").attr("id");
-				var clientTest= $.validatethis.Conditions[formID][key];
+				var clientTest= $.validatethis.conditions[formID][key];
 				result = eval(clientTest);
 				this.log("ValidateThis [condition] : Evaluated {" + key + " = " + result + ", " + formID + "}" );
 			} 
@@ -117,21 +127,21 @@
 		prepareConditions: function(form,data){
 			var formID = form.attr('id');
 			
-			// Cache form conditions
+			// Setup Form Conditions with remote Validation JSON Rules
 			for (var key in data) {
 			   if (key == "conditions"){
 					var obj = data[key];
 					for (var condition in obj){
 						var clientTest = obj[condition];
-						if (!$.validatethis.Conditions[formID]){
-							$.validatethis.Conditions[formID] = {};
+						if (!$.validatethis.conditions[formID]){
+							$.validatethis.conditions[formID] = {};
 						}
-						$.validatethis.Conditions[formID][condition] = clientTest;
+						$.validatethis.conditions[formID][condition] = clientTest;
 					}
 			   }
 			}
 			
-			// Set the element's data "depends" key and the rule.[depends] evluateCondition(element) function 
+			// Set this element's data "depends" key and rule.  
 			for (var key in data) {
 			   if (key == "rules"){
 					var obj = data[key];
@@ -140,7 +150,6 @@
 						$(rules).each(function(){
 							for (var item in this){
 								if (this[item].depends){
-									//alert(this[item].depends);
 									var key = this[item].depends;
 									$(":input[name='" + property + "']",form).data("depends",key);
 									this[item].depends = function (element) { return $.validatethis.evaluateCondition(element) };
@@ -159,7 +168,7 @@
 			
 			var validations = this.prepareConditions(form,$.parseJSON(data));
 			var cacheItem = {key: form.attr('id'), value: validations};
-			this.ruleCache.push(cacheItem);
+			this.vtCache.push(cacheItem);
 			
 			form.validate({
 				debug: false,

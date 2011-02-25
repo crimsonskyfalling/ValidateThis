@@ -37,8 +37,7 @@
         <cfelseif arguments.validation.hasParameter("ServerRegex")>
             <cfset options = arguments.validation.getParameterValue("ServerRegex")/>
         <cfelse>            
-            <cfthrow type="validatethis.client.jQuery.ClientRuleScripter_Regex.missingParameter"
-            message="Either a regex or a serverRegex parameter must be defined for a regex rule type." />
+           <cfreturn super.getParameterDef(argumentCollection=arguments)>
         </cfif>
 		<cfreturn '"' & JSStringFormat(options) & '"' />
 	</cffunction>

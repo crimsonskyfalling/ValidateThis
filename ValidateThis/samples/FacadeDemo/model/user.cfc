@@ -157,6 +157,14 @@
 	<cffunction name="getHowMuch" access="public" returntype="any" output="false">
 		<cfreturn variables.howMuch />
 	</cffunction>
+	<cffunction name="setHowCool" access="public" returntype="any" output="false">
+		<cfargument name="howMuch" />
+		<cfset variables.howCool = arguments.howCool />
+		<cfreturn this />
+	</cffunction>
+	<cffunction name="getHowCool" access="public" returntype="any" output="false">
+		<cfreturn variables.howCool/>
+	</cffunction>
 	<cffunction name="setLikeChocolate" access="public" returntype="any" output="false">
 		<cfargument name="likeChocolate" />
 		<cfset variables.likeChocolate = arguments.likeChocolate />
@@ -189,6 +197,4 @@
 	<cffunction name="getCommunicationMethod" access="public" returntype="any" output="false">
 		<cfreturn variables.communicationMethod />
 	</cffunction>
-
 </cfcomponent>
-

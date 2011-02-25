@@ -177,6 +177,12 @@
 			<p class="formHint">Validations: Numeric - notice that an invalid value is redisplayed upon server side validation failure.</p>
 		</div>
 		<div class="ctrlHolder">
+			#isErrorMsg("HowCool")#
+			<label for="HowCool">#isRequired("HowCool")#How cool is this?</label>
+			<input name="HowCool" id="HowCool" value="#trim(user.getHowCool())#" size="35" maxlength="50" type="text" class="textInput" />
+			<p class="formHint">Validations: Notice that this is a conditionally Required+Numeric+Range validation.</p>
+		</div>
+		<div class="ctrlHolder">
 			#isErrorMsg("AllowCommunication")#
 			<p class="label">#isRequired("AllowCommunication")#Allow Communication</p>
 			<label for="AllowCommunication-1" class="inlineLabel"><input name="AllowCommunication" id="AllowCommunication-1" value="1" type="radio" class=""<cfif user.getAllowCommunication() EQ 1> checked="checked"</cfif> />&nbsp;Yes</label>
