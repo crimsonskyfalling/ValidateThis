@@ -80,6 +80,8 @@
 		<cfargument name="validation" type="any" required="yes" hint="The validation object that describes the validation." />
 		<cfargument name="selector" type="Any" required="yes" />
 		<cfargument name="locale" type="Any" required="no" default="" />
+		<cfargument name="format" type="Any" required="no" default="script" />
+
 
 		<cfscript>
 			if (arguments.validation.hasParameter("DependentFieldName")){
@@ -167,7 +169,7 @@
 
 		<!--- Deal with various conditions --->
 		<cfif StructKeyExists(arguments.validation.getCondition(),"ClientTest")>
-			<cfset theCondition = "function(element) { return #arguments.validation.getCondition().ClientTest# }" />
+			<cfset theCondition = "function(element) { return #arguments.validation.getCondition().clientTest# }" />
         </cfif>
 		
         <cfif len(parameters.DependentInputName) GT 0>
@@ -179,10 +181,9 @@
         </cfif>
 		
         <cfset failureMessage = variables.Translator.translate(failureMessage,arguments.locale)/>
-		
 		<cfoutput>
 		<cfsavecontent variable="theScript">
-		    #arguments.selector#.rules("add", { #valType# : #theCondition#, messages: {#valType#: "#failureMessage#"} });
+		    #arguments.selector#.rules("add", { #valType# : {"depends": #theCondition# }, messages: {#valType#: "#failureMessage#"} });
 		</cfsavecontent>
 		</cfoutput>		
 		<cfreturn trim(theScript) />
