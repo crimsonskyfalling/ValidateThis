@@ -16,7 +16,7 @@
 /**
  * I am the ColdBox proxy used for remote calls
  */
-component extends="validatethis.samples.coldboxmoduledemo.remote.ValidateThisProxy"
+component extends="remote.ValidateThisProxy"
 {
 	remote any function checkDupNickname( required string callback, required string nickname )
 	{

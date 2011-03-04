@@ -82,15 +82,15 @@ component accessors="true"
 		if ( !rc.nojs ) 
 		{
 			// load general client side validation scripts
-			$htmlhead( ValidateThis.getInitializationScript(format="remote") );
+			$htmlhead( ValidateThis.getInitializationScript(setup="remote") );
 
-			// load client side plugin
+			// load validatethis jQeury client plugin
 			getPlugin("HTMLHelper").addAsset("/validatethis/client/jquery/js/jquery.validatethis.js",true);
 
-
-			// load client side validation specific to the User and context
+			// load client validations specific to the User and context
 			//$htmlhead( ValidateThis.getValidationScript( objectType="User", Context=rc.Context ) );
 			
+			// currently setting up object, form, & context specific validations in the maintain using an document.onready() script
 		}
 		
 		// render the view

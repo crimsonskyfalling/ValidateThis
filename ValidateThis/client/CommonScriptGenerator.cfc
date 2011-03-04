@@ -25,11 +25,11 @@
 		<cfargument name="JSLib" type="any" required="true" />
 		<cfargument name="JSIncludes" type="Any" required="no" default="true" />
 		<cfargument name="locale" type="Any" required="no" default="" />
-		<cfargument name="format" type="Any" required="no" default="default" />
+		<cfargument name="setup" type="Any" required="no" default="default" hint="'remote'|'methods'|'default|[anythingelsehere]'"/>
 
 		<cfset var theScript = "" />
 		
-		<cfswitch expression="#arguments.format#">
+		<cfswitch expression="#arguments.setup#">
 			<cfcase value="remote">
 				<cfif arguments.JSIncludes>
 					<cfset theScript = variables.ClientValidator.getGeneratedJavaScript(JSLib=arguments.JSLib,scriptType="JSInclude") />
@@ -38,7 +38,7 @@
 					<cfset theScript = theScript & variables.ClientValidator.getGeneratedJavaScript(JSLib=arguments.JSLib,scriptType="Locale",locale=arguments.locale) />
 				</cfif>
 			</cfcase>
-			<cfcase value="json">
+			<cfcase value="methods">
 				<cfset theScript = theScript & variables.ClientValidator.getGeneratedJavaScript(JSLib=arguments.JSLib,scriptType="VTSetup") />
 			</cfcase>
 			<cfdefaultcase>
@@ -54,5 +54,5 @@
 		
 		<cfreturn theScript />
 	</cffunction>
-
+	
 </cfcomponent>

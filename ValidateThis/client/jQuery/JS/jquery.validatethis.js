@@ -16,7 +16,7 @@
 
 // closure for plugin
 (function($){
-	
+
 	Object.size = function(obj) {
 		var size = 0, key;
 		for (key in obj) {
@@ -27,44 +27,45 @@
 
 	$.validatethis = {
 		version: '0.99',
-		vtCache: [], // todo implement accessors for has|add|get|remove
-		conditions: [], 
-		
+		vtCache: [], // todo implement exists|set|get|remove for cache
+		conditions: [],
+
 		// Settings
-		settings: {}, 
-		
+		settings: {},
+
 		defaults: {
-			debug:				true,
+			debug:				false,
 			initialized:		false,
 			remoteEnabled:		false,
 			baseURL: 			'',
 			appMapping:			'',
 			ajaxProxyURL:		'/remote/validatethisproxy.cfc?method=',
 			ignoreClass:		".ignore",
-			errorClass:			'ui-state-error',
+			errorClass:			'ui-state-error'
 		},
-		
+
 		result: {
 			isSuccess:true,
 			errors:[]
 		},
-		
+
+		// validatethis client plugin setup
 		init : function(options){
 			if (!this.settings.initialized){
 				this.session = {};
 				
-				this.log("ValidateThis [plugin]: initializing v" + this.version);
-				
+				this.log("plugin","initializing v" + this.version);
+
 				// Log Options For Debugging
-				this.log("ValidateThis [options]: " + $.param(options));
-				
+				this.log("plugin","options=" + $.param(options));
+
 				var extendedDefaultOptions = $.extend({}, this.defaults, options);
-				
+
 				this.settings = extendedDefaultOptions;
 
-				// See: : /validatethis/extras/coldbox/remote/validatethisproxy.cfc
+				// See: : /validatethis/samples/colboxmoduledemo/remote/validatethisproxy.cfc
 				this.remoteCall("getValidationVersion",{},this.getVersionCallback);
-				$.validatethis.remoteCall("getInitializationScript",{format:"json"},
+				$.validatethis.remoteCall("getInitializationScript",{setup:"methods"},
 						function(data){
 							$.validatethis.evalInitScript(data);
 						}
@@ -72,12 +73,12 @@
 				
 				this.setValidatorDefaults();
 				this.settings.initialized = true;
-				
+
 			} else {
-				this.log("ValidateThis [plugin]: initialized ");
+				this.log("plugin","initialized");
 			}
 		},
-		
+
 		setValidatorDefaults: function(){
 			$.validator.setDefaults({
 				submitHandler: 		$.validatethis.submitHandler,
@@ -86,20 +87,20 @@
 				errorPlacement: function(error, element) { error.appendTo( element.parent("div"))}
 			});
 		},
-		
+
 		clearFormRules: function(form){
 			form.find(":input").each(function(input){
 				$(input).rules("remove");
 			});
 		},
-		
+
 		remoteCall: function(action, arguments, callback){
-			this.log("ValidateThis [remote]: " + action + " " + $.param(arguments));
+			this.log("remote",action + " " + $.param(arguments));
 			$.get(this.settings.ajaxProxyURL + action + "&" + $.param(arguments), callback);
 		},
 
 		submitHandler: function(form) {
-			$.validatethis.log("ValidateThis [form]: submitHandler form " + $(form).attr("name"));
+			$.validatethis.log("validations","submitHandler for " + $(form).attr("name"));
 			if ($.validatethis.settings.remoteEnabled){
 				$(form).ajaxSubmit({success: function(element,data){
 					$.validatethis.ajaxSubmitSuccessCallback(form,element);
@@ -109,31 +110,31 @@
 			}
 		},
 
+		// Callback for A successful AJAX form submit
 		ajaxSubmitSuccessCallback: function(form,data){
-			$.validatethis.log("ValidateThis [remote]: Submit Success");
+			$.validatethis.log("plugin", "Submit Success");
 			$(form).html(data);
 			$(form).parent().validatethis();
-			
-			//$form.html(data);
 		},
 
-		evaluateCondition: function(element){
+		// Eval a ClientTest Condition
+		testCondition: function(element){
 			// return true by default
 			var result = true;
-			
 			if ( $(element).data("depends") ){
 				var key = $(element).data("depends");
 				var formID = $(element).parents().find("form:first").attr("id");
 				var clientTest= $.validatethis.conditions[formID][key];
 				result = eval(clientTest);
-				this.log("ValidateThis [condition] : Evaluated {" + key + " = " + result + ", " + formID + "}" );
+				this.log("condition","Tested {" + key + " = " + result + ", " + formID + "}" );
 			} 
 			return result;
 		},
 
-		prepareConditions: function(form,data){
+		// Deal With Various Conditions
+		prepareValidations: function(form,data){
 			var formID = form.attr('id');
-			
+			this.log("validations","preparing validation data");
 			// Setup Form Conditions with remote Validation JSON Rules
 			for (var key in data) {
 			   if (key == "conditions"){
@@ -147,10 +148,10 @@
 					}
 			   }
 			}
-			
-			// Set this element's data "depends" key and rule.  
+
+			// Set this element's data "depends" key and rule.
 			for (var key in data) {
-			   if (key == "rules"){
+			 	if (key == "rules"){
 					var obj = data[key];
 					for (var property in obj){
 						var rules = obj[property];
@@ -159,24 +160,24 @@
 								if (this[item].depends){
 									var key = this[item].depends;
 									$(":input[name='" + property + "']",form).data("depends",key);
-									this[item].depends = function (element) { return $.validatethis.evaluateCondition(element) };
+									this[item].depends = function (element) { return $.validatethis.testCondition(element) };
 								}
 							}
 						});
 					}
-			   }
+				}
 			}
-			
 			return data;
 		},
-		
+
+		// Setup validate for a form using the remote getValidationRulesStruct() results (JSON) 
 		loadRules: function(form,data){
-			$.validatethis.log("ValidateThis [loadRules]: " + form.attr('name'));
-			
-			var validations = this.prepareConditions(form,$.parseJSON(data));
+			$.validatethis.log("loadRules",form.attr('name'));
+
+			var validations = this.prepareValidations(form,$.parseJSON(data));
 			//var cacheItem = {key: form.attr('id'), value: validations};
 			//this.vtCache.push(cacheItem);
-			
+
 			form.validate({
 				debug: false,
 				ignore: $.validatethis.settings.ignoreClass,
@@ -184,24 +185,24 @@
 				rules: validations.rules,
 				messages: validations.messages
 			});
-			
-			$.validatethis.log("ValidateThis [status]: ready.");
+			$.validatethis.log("validations","ready");
 		},
-		
+
+		// Setup validate plugin methods for a page using the remote getInitializationScript(setup="methods") results plain/text javascript 
 		evalInitScript : function(data){
 			var dataEl = $(data);
 			eval(dataEl.html());
 		},
-		
+
 		getVersionCallback: function(data){
 			$.validatethis.settings.remoteEnabled = true;
-			$.validatethis.log("ValidateThis [remote]: v" + data);
+			$.validatethis.log("plugin","v" + data);
 		},
 
-		log: function(message){
+		log: function(type, message){
 			if (this.settings.debug && window.console) {
 				if (console.debug){
-					console.debug(message);
+					console.debug("ValidateThis " + "[" + type + "]: " + message);
 				} else if (console.log){
 					console.log(message);
 				}
@@ -213,23 +214,33 @@
 		}
 	};
 
-	// Plugin Methods
+	// ValidateThis Plugin Method
 	$.fn.validatethis = function(options){	
-		// iterate and reformat each matched element
+		
+		// extend opt settings with options argument
 		var opts = $.extend({}, $.validatethis.settings, options);
+		
+		// each selected element
 		return this.each(function(){
-			// build element specific options
+			
+			// extends init option with metadata or extends opts with element data
 			var o = $.meta ? $.extend({}, opts, $this.data()) : opts;
-				$.validatethis.init(o);	
+				
+				$.validatethis.init(o);
+					
 				// Initialize Validate Plugin
 				$(this).find("form").each(function(){
 					var $form = $(this);
-					$.validatethis.log("ValidateThis [form]: " + $form.attr('name'));
+					
+					$.validatethis.log("form",$form.attr('name'));
+					
 					$.validatethis.remoteCall("getValidationJSON",{"objectType":$form.attr('rel'),"formName":$form.attr('id'),"locale":"","context":$form.attr('id')},
 						function(data){
 							$.validatethis.loadRules($form,data);
+							//$form.data('setup',true);
 						}
 					);
+					
 				});
 		});
 	};

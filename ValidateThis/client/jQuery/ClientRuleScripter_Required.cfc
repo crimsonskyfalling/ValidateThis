@@ -57,23 +57,21 @@
 		<cfset var parameters = arguments.validation.getParameters() />
 		<cfset var conditionDef = "" />
 
-		<cfif len(parameters.DependentInputName) GT 0>
+		<cfif structKeyExists(parameters,"DependentInputName") and len(parameters.DependentInputName) GT 0>
 			<cfif len(parameters.DependentInputValue) gt 0>
 			    <cfset conditionDef = "$("":input[name='#parameters.DependentInputName#']"").getValue() == " & parameters.DependentInputValue & ";"/>
 			<cfelse>
 			    <cfset conditionDef = "$("":input[name='#parameters.DependentInputName#']"").getValue().length > 0;"/>
 			</cfif>
 		</cfif>
+		
 		<cfif len(conditionDef)>
 			<cfset arguments.validation.addParameter("depends","#arguments.validation.getClientFieldName()#Depends")>
 			<cfreturn ',"conditions": {"#arguments.validation.getClientFieldName()#Depends" : "#jsStringFormat(conditionDef)#"}' />
 		<cfelse>
-	     	<cfif arguments.validation.hasClientTest()>
-				<cfreturn  ',"conditions": {"#arguments.validation.getConditionName()#" : "#arguments.validation.getClientTest()#"}' />
-			<cfelse>
-				<cfreturn ''>
-			</cfif>
+	     	<cfreturn super.getConditionDef(argumentCollection=arguments)/>
 		</cfif>
+		
 	</cffunction>
 	
 	<cffunction name="generateRuleStruct" returntype="any" access="public" output="false" hint="I generate the JS script required to implement a validation.">
@@ -89,7 +87,6 @@
 			} else if (arguments.validation.hasParameter("DependentPropertyName")){
 				arguments.validation.addParameter("DependentInputName",arguments.validation.getParameterValue("DependentPropertyName"));
 			} else {
-				arguments.validation.addParameter("DependentInputName","");
 			}
 
 			if (arguments.validation.hasParameter("DependentPropertyValue")){
@@ -97,7 +94,6 @@
 			} else if (arguments.validation.hasParameter("DependentFieldValue")){
 				arguments.validation.addParameter("DependentInputValue",arguments.validation.getParameterValue("DependentFieldValue"));			
 			} else {
-				arguments.validation.addParameter("DependentInputValue","");
 			}
 
 			if (len(arguments.validation.getParameterValue("DependentInputName")) gt 0){
@@ -109,7 +105,6 @@
 					arguments.validation.addParameter("DependentInputDesc",arguments.validation.getParameterValue("DependentInputName"));
 				}
 			}	else {
-				arguments.validation.addParameter("DependentInputDesc","");
 			}
 		</cfscript>
 		<cfreturn super.generateRuleStruct(argumentCollection=arguments) />
