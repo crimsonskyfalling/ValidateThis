@@ -84,7 +84,8 @@
 		<cfset var key = "" />
 		<cfset var clientFieldName = "" />
 		<cfset var field = "" />
-
+		<cfset var theRule = ""/>
+		
 		<cfset theResult['messages'] = {}/>
 		<cfset theResult['rules'] = {}/>
 		<cfset theResult['conditions'] = {}/>
@@ -92,7 +93,10 @@
 		<cfif IsArray(arguments.Validations) and ArrayLen(arguments.Validations)>
 			<cfloop Array="#arguments.Validations#" index="validation">
 				<cfset theVal.load(validation) />
-				<cfset theJSON = listAppend(theJSON,Trim(theScriptWriter.generateValidationJSON(theVal,arguments.formName,arguments.locale)))/>
+				<cfset theRule = Trim(theScriptWriter.generateValidationJSON(theVal,arguments.formName,arguments.locale))/>
+				<cfif len(theRule) gt 0>
+					<cfset theJSON = listAppend(theJSON,theRule)/>
+				</cfif>
 			</cfloop>
 			
 			<!--- Wrap validation json as array  --->
@@ -118,14 +122,14 @@
 					<cfloop collection="#field[clientFieldName]#" item="key">
 						<cfif key eq "messages">
 							<cfloop collection="#field[clientFieldName][key]#" item="message">
-								<cfset structInsert(theResult['messages'][clientFieldName],message,field[clientFieldName][key][message],true)/>
+								<cfset structInsert(theResult['messages']['#clientFieldName#'],message,field['#clientFieldName#']['#key#'][message],true)/>
 							</cfloop>
 						<cfelseif key eq "conditions">
 							<cfloop collection="#field[clientFieldName][key]#" item="condition">
-								<cfset structInsert(theResult['conditions'],condition,field[clientFieldName][key][condition],true)/>
+								<cfset structInsert(theResult['conditions'],condition,field['#clientFieldName#']['#key#']['#condition#'],true)/>
 							</cfloop>
 						<cfelse>
-							<cfset structInsert(theResult['rules'][clientFieldName],key,field[clientFieldName][key],true)/>
+							<cfset structInsert(theResult['rules']['#clientFieldName#'],key,field['#clientFieldName#']['#key#'],true)/>
 						</cfif>
 					</cfloop>
 				</cfloop>

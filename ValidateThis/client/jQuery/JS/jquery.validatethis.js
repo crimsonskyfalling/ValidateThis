@@ -34,14 +34,14 @@
 		settings: {}, 
 		
 		defaults: {
-			debug:				false,
+			debug:				true,
 			initialized:		false,
 			remoteEnabled:		false,
 			baseURL: 			'',
 			appMapping:			'',
 			ajaxProxyURL:		'/remote/validatethisproxy.cfc?method=',
 			ignoreClass:		".ignore",
-			errorClass:			'ui-state-error'
+			errorClass:			'ui-state-error',
 		},
 		
 		result: {
@@ -80,6 +80,7 @@
 		
 		setValidatorDefaults: function(){
 			$.validator.setDefaults({
+				submitHandler: 		$.validatethis.submitHandler,
 				errorClass: $.validatethis.settings.errorClass,
 				errorElement: 'span',
 				errorPlacement: function(error, element) { error.appendTo( element.parent("div"))}
@@ -100,14 +101,20 @@
 		submitHandler: function(form) {
 			$.validatethis.log("ValidateThis [form]: submitHandler form " + $(form).attr("name"));
 			if ($.validatethis.settings.remoteEnabled){
-				$(form).ajaxSubmit({success:$.validatethis.ajaxSubmitSuccessCallback});
+				$(form).ajaxSubmit({success: function(element,data){
+					$.validatethis.ajaxSubmitSuccessCallback(form,element);
+				}});
 			} else {
 				form.submit();
 			}
 		},
 
-		ajaxSubmitSuccessCallback: function(data){
-			$.validatethis.log("ValidateThis [remote]: Submit Success - " + $.param(data));
+		ajaxSubmitSuccessCallback: function(form,data){
+			$.validatethis.log("ValidateThis [remote]: Submit Success");
+			$(form).html(data);
+			$(form).parent().validatethis();
+			
+			//$form.html(data);
 		},
 
 		evaluateCondition: function(element){
@@ -167,8 +174,8 @@
 			$.validatethis.log("ValidateThis [loadRules]: " + form.attr('name'));
 			
 			var validations = this.prepareConditions(form,$.parseJSON(data));
-			var cacheItem = {key: form.attr('id'), value: validations};
-			this.vtCache.push(cacheItem);
+			//var cacheItem = {key: form.attr('id'), value: validations};
+			//this.vtCache.push(cacheItem);
 			
 			form.validate({
 				debug: false,
